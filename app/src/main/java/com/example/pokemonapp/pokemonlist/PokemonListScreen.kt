@@ -34,12 +34,10 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.hilt.navigation.compose.hiltViewModel
-//import androidx.hilt.navigation.compose.hiltNavGraphViewModel
+import androidx.hilt.navigation.compose.hiltNavGraphViewModel
 import coil.request.ImageRequest
 import com.example.pokemonapp.R
 import com.example.pokemonapp.data.models.PokemonListEntry
-import com.example.pokemonapp.data.remote.responses.PokemonList
 import com.example.pokemonapp.ui.theme.RobotoCondensed
 import com.google.accompanist.coil.CoilImage
 
@@ -73,7 +71,7 @@ fun PokemonListScreen(
             ) {
             }
             Spacer(modifier = Modifier.height(16.dp))
-            PokemonList(
+            ShowPokemonList(
                 navController
             )
         }
@@ -127,8 +125,7 @@ fun PokemonEntry(
     entry: PokemonListEntry,
     navController: NavController,
     modifier: Modifier = Modifier,
-    // check
-    viewModel: PokemonListViewModel = hiltViewModel()
+    viewModel: PokemonListViewModel = hiltNavGraphViewModel()
 ) {
     val defaultDominantColor = MaterialTheme.colors.surface
     var dominantColor by remember { mutableStateOf(defaultDominantColor) }
@@ -176,10 +173,9 @@ fun PokemonEntry(
 }
 
 @Composable
-fun PokemonList(
+fun ShowPokemonList(
     navController: NavController,
-    // check
-    viewModel: PokemonListViewModel = hiltViewModel()
+    viewModel: PokemonListViewModel = hiltNavGraphViewModel()
 ) {
     var pokemonList by remember { viewModel.pokemonlist }
     val endReached by remember { viewModel.endReached }
