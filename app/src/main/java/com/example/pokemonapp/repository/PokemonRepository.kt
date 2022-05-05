@@ -1,5 +1,6 @@
 package com.example.pokemonapp.repository
 
+import android.util.Log
 import com.example.pokemonapp.data.remote.api.PokemonAPI
 import com.example.pokemonapp.data.remote.responses.Pokemon
 import com.example.pokemonapp.data.remote.responses.PokemonList

@@ -146,23 +146,23 @@ fun PokemonEntry(
                 navController.navigate("pokemon_detail_screen/${dominantColor.toArgb()}/${entry.pokemonName}")
             }) {
         Column {
-            CoilImage(
-                request = ImageRequest.Builder(LocalContext.current)
-                    .data(entry.imageUrl)
-                    .target {
-                        viewModel.calcDominantColor(it) { color ->
-                            dominantColor = color
-                        }
-                    }.build(), contentDescription = "pokemonImage",
-                modifier = Modifier
-                    .size(120.dp)
-                    .align(CenterHorizontally)
-            ) {
-                CircularProgressIndicator(
-                    color = MaterialTheme.colors.primary,
-                    modifier = Modifier.scale(0.5f)
-                )
-            }
+//            CoilImage(
+//                request = ImageRequest.Builder(LocalContext.current)
+//                    .data(entry.imageUrl)
+//                    .target {
+//                        viewModel.calcDominantColor(it) { color ->
+//                            dominantColor = color
+//                        }
+//                    }.build(), contentDescription = "pokemonImage",
+//                modifier = Modifier
+//                    .size(120.dp)
+//                    .align(CenterHorizontally)
+//            ) {
+//                CircularProgressIndicator(
+//                    color = MaterialTheme.colors.primary,
+//                    modifier = Modifier.scale(0.5f)
+//                )
+//            }
             Text(
                 text = entry.pokemonName,
                 fontFamily = RobotoCondensed,
