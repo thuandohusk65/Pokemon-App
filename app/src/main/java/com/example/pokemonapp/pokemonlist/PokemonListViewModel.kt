@@ -33,7 +33,7 @@ class PokemonListViewModel @Inject constructor(
         isloading.value = true
         viewModelScope.launch {
             val result =
-                repository.getPokemonList(Constants.PAGE_SIZE, curPage * Constants.PAGE_SIZE)
+                repository.getPokemonList(20, curPage * Constants.PAGE_SIZE)
             when (result) {
                 is Resource.Success -> {
                     endReached.value == curPage * Constants.PAGE_SIZE >= result.data!!.count
@@ -54,6 +54,7 @@ class PokemonListViewModel @Inject constructor(
                 is Resource.Error -> {
                     loadError.value = result.message!!
                     isloading.value = false
+
                 }
             }
 

@@ -2,7 +2,6 @@ package com.example.pokemonapp.data.remote.api
 
 import com.example.pokemonapp.data.remote.responses.Pokemon
 import com.example.pokemonapp.data.remote.responses.PokemonList
-import retrofit2.Response
 import retrofit2.http.GET
 import retrofit2.http.Path
 import retrofit2.http.Query

@@ -34,7 +34,9 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.hilt.navigation.compose.hiltNavGraphViewModel
+import androidx.hilt.navigation.compose.hiltViewModel
+
+import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.request.ImageRequest
 import com.example.pokemonapp.R
 import com.example.pokemonapp.data.models.PokemonListEntry
@@ -125,7 +127,7 @@ fun PokemonEntry(
     entry: PokemonListEntry,
     navController: NavController,
     modifier: Modifier = Modifier,
-    viewModel: PokemonListViewModel = hiltNavGraphViewModel()
+    viewModel: PokemonListViewModel = hiltViewModel()
 ) {
     val defaultDominantColor = MaterialTheme.colors.surface
     var dominantColor by remember { mutableStateOf(defaultDominantColor) }
@@ -175,13 +177,12 @@ fun PokemonEntry(
 @Composable
 fun ShowPokemonList(
     navController: NavController,
-    viewModel: PokemonListViewModel = hiltNavGraphViewModel()
+    viewModel: PokemonListViewModel = hiltViewModel()
 ) {
     var pokemonList by remember { viewModel.pokemonlist }
     val endReached by remember { viewModel.endReached }
     val loadError by remember { viewModel.loadError }
     var isLoading by remember { viewModel.isloading }
-
 
     LazyColumn(contentPadding = PaddingValues(16.dp)) {
         val itemCount =
