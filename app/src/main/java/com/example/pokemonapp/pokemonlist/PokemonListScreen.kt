@@ -1,5 +1,6 @@
 package com.example.pokemonapp.pokemonlist
 
+import android.annotation.SuppressLint
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -13,11 +14,8 @@ import androidx.compose.material.MaterialTheme
 import androidx.navigation.NavController
 import androidx.compose.material.Surface
 import androidx.compose.material.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
-import androidx.compose.runtime.getValue
+import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Alignment.Companion.Center
 import androidx.compose.ui.Alignment.Companion.CenterHorizontally
 import androidx.compose.ui.Modifier
@@ -37,15 +35,23 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 
 import androidx.lifecycle.viewmodel.compose.viewModel
+import coil.Coil
+import coil.ImageLoader
+import coil.compose.rememberImagePainter
 import coil.request.ImageRequest
 import com.example.pokemonapp.R
 import com.example.pokemonapp.data.models.PokemonListEntry
 import com.example.pokemonapp.ui.theme.RobotoCondensed
-import com.google.accompanist.coil.CoilImage
+import com.example.pokemonapp.ui.theme.TypeWater
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
+import org.jetbrains.annotations.Async
 
 @Composable
 fun PokemonListScreen(
-    navController: NavController
+    navController: NavController,
+    viewModel: PokemonListViewModel = hiltViewModel()
 ) {
     Surface(
         color = MaterialTheme.colors.background,
@@ -70,7 +76,8 @@ fun PokemonListScreen(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(16.dp)
-            ) {
+            ) { query ->
+                viewModel.searchPokemonList(query)
             }
             Spacer(modifier = Modifier.height(16.dp))
             ShowPokemonList(
@@ -105,7 +112,7 @@ private fun searchBar(
                 .background(Color.White)
                 .padding(horizontal = 20.dp, vertical = 12.dp)
                 .onFocusChanged {
-                    isHintDisplay = it.isFocused != true
+                    isHintDisplay = it.isFocused != true && text.isNotEmpty()
                 }
         )
         if (isHintDisplay) {
@@ -133,7 +140,7 @@ fun PokemonEntry(
     var dominantColor by remember { mutableStateOf(defaultDominantColor) }
 
     Box(contentAlignment = Center,
-        modifier = Modifier
+        modifier = modifier
             .shadow(5.dp, RoundedCornerShape(10.dp))
             .clip(RoundedCornerShape(10.dp))
             .aspectRatio(1f)
@@ -146,29 +153,36 @@ fun PokemonEntry(
                 navController.navigate("pokemon_detail_screen/${dominantColor.toArgb()}/${entry.pokemonName}")
             }) {
         Column {
-//            CoilImage(
-//                request = ImageRequest.Builder(LocalContext.current)
-//                    .data(entry.imageUrl)
-//                    .target {
-//                        viewModel.calcDominantColor(it) { color ->
-//                            dominantColor = color
-//                        }
-//                    }.build(), contentDescription = "pokemonImage",
-//                modifier = Modifier
-//                    .size(120.dp)
-//                    .align(CenterHorizontally)
-//            ) {
-//                CircularProgressIndicator(
-//                    color = MaterialTheme.colors.primary,
-//                    modifier = Modifier.scale(0.5f)
-//                )
-//            }
+
+            val request = ImageRequest.Builder(LocalContext.current)
+                .data(entry.imageUrl)
+                .build()
+            LaunchedEffect(key1 = true) {
+                val drawable = Coil.execute(request).drawable
+                if (drawable != null) {
+                    viewModel.calcDominantColor(drawable) {
+                        dominantColor = it
+                    }
+                }
+            }
+
+            val painter = rememberImagePainter(
+                request = request, imageLoader = ImageLoader.invoke(LocalContext.current)
+            )
+            Image(
+                painter = painter, contentDescription = null,
+                modifier = Modifier
+                    .size(100.dp)
+                    .align(CenterHorizontally)
+            )
             Text(
                 text = entry.pokemonName,
                 fontFamily = RobotoCondensed,
                 fontSize = 20.sp,
                 textAlign = TextAlign.Center,
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .align(CenterHorizontally)
             )
         }
     }
@@ -183,12 +197,13 @@ fun ShowPokemonList(
     val endReached by remember { viewModel.endReached }
     val loadError by remember { viewModel.loadError }
     var isLoading by remember { viewModel.isloading }
+    val isSearching by remember { viewModel.isSearching }
 
     LazyColumn(contentPadding = PaddingValues(16.dp)) {
         val itemCount =
             if (pokemonList.size % 2 == 0) pokemonList.size / 2 else pokemonList.size / 2 + 1
         items(itemCount) {
-            if (it <= itemCount - 1 && !endReached) {
+            if (it <= itemCount - 1 && !endReached && !isLoading && !isSearching) {
                 viewModel.loadPokemonPaginated()
             }
             PokeRow(rowIndex = it, entries = pokemonList, navController = navController)
@@ -207,7 +222,7 @@ fun PokeRow(
             PokemonEntry(
                 entry = entries[rowIndex * 2],
                 navController = navController,
-                modifier = Modifier.weight(1f)
+                modifier = Modifier.weight(1F)
             )
             Spacer(
                 modifier = Modifier.width(16.dp)
@@ -216,16 +231,15 @@ fun PokeRow(
                 PokemonEntry(
                     entry = entries[rowIndex * 2 + 1],
                     navController = navController,
-                    modifier = Modifier.weight(1f)
+                    modifier = Modifier.weight(1F)
                 )
             } else {
                 Spacer(
                     modifier = Modifier.weight(1f)
                 )
             }
-            Spacer(
-                modifier = Modifier.width(16.dp)
-            )
         }
+        Spacer(modifier = Modifier.height(16.dp))
     }
+
 }

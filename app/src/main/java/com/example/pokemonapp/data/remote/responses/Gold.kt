@@ -7,3 +7,4 @@ data class Gold(
     val front_shiny: String,
     val front_transparent: String
 )
+

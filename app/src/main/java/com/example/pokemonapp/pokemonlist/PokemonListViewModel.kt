@@ -14,6 +14,8 @@ import com.example.pokemonapp.repository.PokemonRepository
 import com.example.pokemonapp.util.Constants
 import com.example.pokemonapp.util.Resource
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import java.util.*
 import javax.inject.Inject
@@ -28,6 +30,36 @@ class PokemonListViewModel @Inject constructor(
     var loadError = mutableStateOf("")
     var isloading = mutableStateOf(false)
     var endReached = mutableStateOf(false)
+
+    private var cachePokemonList = listOf<PokemonListEntry>()
+    private var isSearchStarting = true
+    var isSearching = mutableStateOf(false)
+
+    fun searchPokemonList(query: String) {
+        val listToSearch = if (isSearchStarting) {
+            pokemonlist.value
+        } else {
+            cachePokemonList
+        }
+        viewModelScope.launch(Dispatchers.Default) {
+            if (query.isEmpty()) {
+                pokemonlist.value = cachePokemonList
+                isSearching.value = false
+                isSearchStarting = true
+                return@launch
+            }
+            val results = listToSearch.filter {
+                it.pokemonName.contains(query.trim(), ignoreCase = true) ||
+                        it.number.toString() == query.trim()
+            }
+            if (isSearchStarting) {
+                cachePokemonList = pokemonlist.value
+                isSearchStarting = false
+            }
+            pokemonlist.value = results
+            isSearching.value = true
+        }
+    }
 
     fun loadPokemonPaginated() {
         isloading.value = true
@@ -47,6 +79,7 @@ class PokemonListViewModel @Inject constructor(
                             "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${index}.png"
                         PokemonListEntry(entry.name.capitalize(Locale.ROOT), url, index.toInt())
                     }
+                    curPage++
                     loadError.value = ""
                     isloading.value = false
                     pokemonlist.value += pokeDexEntries
